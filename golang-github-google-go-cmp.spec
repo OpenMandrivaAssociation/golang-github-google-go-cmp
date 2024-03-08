@@ -1,68 +1,82 @@
-# https://github.com/google/go-cmp
-%global goipath         github.com/google/go-cmp
-Version:                0.2.0
+# Run tests in check section
+%bcond_without check
 
-%global common_description %{expand:
-This package is intended to be a more powerful and safer alternative
-to reflect.DeepEqual for comparing whether two values are semantically
-equal.}
+# https://github.com/google/go-cmp
+%global goipath		github.com/google/go-cmp
+%global forgeurl	https://github.com/google/go-cmp
+Version:		0.6.0
 
 %gometa
 
-Name:           golang-github-google-go-cmp
-Release:        4%{?dist}
-Summary:        Package for comparing Go values in tests
-# Detected licences
-# - BSD 3-clause "New" or "Revised" License at 'LICENSE'
-License:        BSD
-URL:            %{gourl}
-Source0:        %{gosource}
+Summary:	Package for comparing Go values in tests
+Name:		golang-github-google-go-cmp
+
+Release:	1
+Source0:	https://github.com/google/go-cmp/archive/v%{version}/go-cmp-%{version}.tar.gz
+URL:		https://github.com/google/go-cmp
+License:	BSD-3-Clause
+Group:		Development/Other
+BuildRequires:	compiler(go-compiler)
+BuildArch:	noarch
 
 %description
-%{common_description}
+This package is intended to be a more powerful and safer
+alternative to reflect.DeepEqual for comparing whether
+two values are semantically equal.
 
+The primary features of cmp are:
+
+ *  When the default behavior of equality does not suit
+    the needs of the test, custom equality functions can
+    override the equality operation. For example, an equality
+    function may report floats as equal so long as they are
+    within some tolerance of each other.
+
+ *  Types that have an Equal method may use that method to
+    determine equality. This allows package authors to
+    determine the equality operation for the types that they
+    define.
+
+ *  If no custom equality functions are used and no Equal
+    method is defined, equality is determined by recursively
+    comparing the primitive kinds on both values, much like
+    reflect.DeepEqual. Unlike reflect.DeepEqual, unexported
+    fields are not compared by default; they result in panics
+    unless suppressed by using an Ignore option (see
+    cmpopts.IgnoreUnexported) or explicitly compared using the
+    AllowUnexported option.
+
+#-----------------------------------------------------------------------
 
 %package devel
-Summary:       %{summary}
-BuildArch:     noarch
+Summary:	%{summary}
+Group:		Development/Other
+BuildArch:	noarch
 
 %description devel
-%{common_description}
+%{description}
 
 This package contains library source intended for
 building other packages which use import path with
 %{goipath} prefix.
 
+%files devel -f devel.file-list
+%license LICENSE
+%doc README.md
+
+#-----------------------------------------------------------------------
 
 %prep
-%forgeautosetup
+%autosetup -p1 -n go-cmp-%{version}
 
+%build
+%gobuildroot
 
 %install
 %goinstall
 
-
 %check
+%if %{with check}
 %gochecks
+%endif
 
-
-%files devel -f devel.file-list
-%license LICENSE
-%doc README.md CONTRIBUTING.md
-
-
-%changelog
-* Sun Nov 11 2018 Robert-André Mauchin <zebob.m@gmail.com> - 0.2.0-4
-- Update to new Go packaging
-
-* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 0.2.0-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
-
-* Tue Feb 20 2018 Ed Marshall <esm@logic.net> - 0.2.0-1
-* Update to upstream release 0.2.0.
-
-* Wed Feb 07 2018 Fedora Release Engineering <releng@fedoraproject.org> - 0.1.0-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
-
-* Thu Oct 19 2017 Ed Marshall <esm@logic.net> - 0.1.0-1
-- First package for Fedora
